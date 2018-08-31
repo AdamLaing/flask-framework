@@ -1,0 +1,2 @@
+This is Adam's flask clone
+It will be updated further over the next week and a half
