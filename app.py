@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, flash
-from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
+from wtforms import TextField, TextAreaField, validators, StringField, SubmitField
+from flask_wtf import Form
+from wtforms.validators import DataRequired
 
 DEBUG = True 
 app = Flask(__name__)
