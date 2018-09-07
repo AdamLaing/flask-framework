@@ -61,7 +61,7 @@ def close():
             p.line(data['date'], data['close'], line_width=2)
   
             script, div = components(p)
-			flash('{} close price for January 2018'.format(tick))
+            flash('{} close price for January 2018'.format(tick))
             return render_template('close.html', div=div, script=script, form=form)
 
         flash(error)
