@@ -30,11 +30,11 @@ class ReusableForm(Form):
     name = TextField('Ticker:', validators=[validators.required()])
  
 
-@app.route('/')
+@manage.route('/')
 def index():
   return render_template('index.html')
 
-@app.route('/close', methods=('GET', 'POST'))
+@manage.route('/close', methods=('GET', 'POST'))
 def close():
     form = ReusableForm(request.form)
 
