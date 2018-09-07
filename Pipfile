@@ -8,6 +8,10 @@ gunicorn = "*"
 django-heroku = "*"
 requests = "*"
 wtforms = "*"
+"zipfile2" = "*"
+quandl = "*"
+pandas = "*"
+bokeh = "*"
 
 [requires]
 python_version = "3.6"
