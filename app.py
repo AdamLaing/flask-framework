@@ -34,6 +34,7 @@ class ReusableForm(Form):
 def index():
   return render_template('index.html')
 
+  
 @app.route('/close', methods=('GET', 'POST'))
 def close():
     form = ReusableForm(request.form)
