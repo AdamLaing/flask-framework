@@ -13,6 +13,7 @@ quandl = "*"
 pandas = "*"
 bokeh = "*"
 statsmodels = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.6"
