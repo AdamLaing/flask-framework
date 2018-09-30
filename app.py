@@ -98,11 +98,11 @@ class KickstarterForm(Form):
     camp_dur = TextField('Campaign Duration (days):', validators=[validators.required()])
     launch_month = TextField('Launch Month:', validators=[validators.required()])
     goal = TextField('Goal Amount (USD):', validators=[validators.required()])
-    word_count = TextField('Campaign Description Word Count:', validators=[validators.required()])
-    paragraphs = TextField('Number of Paragraphs in Campaign Description:', validators=[validators.required()])
     pledges = TextField('Please enter the values of each pledge level ('
                          'including possible repeats) in USD, each separated '
                          'by a space.:', validators=[validators.required()])
+    description = TextAreaField('Please enter the full text description of your campaign.\n'
+							'Please separate paragraphs by an empty line. :', validators=[validators.required()])
 
 
 @app.route('/')
@@ -121,9 +121,8 @@ def kickstarter():
         camp_dur = request.form['camp_dur']
         launch_month = request.form['launch_month']
         goal = request.form['goal']
-        word_count = request.form['word_count']
-        paragraphs = request.form['paragraphs']
         pledges = request.form['pledges']
+        dsecription = request.form['description']
         # This will all need to be updated
         error = None
 
