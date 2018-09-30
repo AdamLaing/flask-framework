@@ -12,6 +12,7 @@ wtforms = "*"
 quandl = "*"
 pandas = "*"
 bokeh = "*"
+statsmodels = "*"
 
 [requires]
 python_version = "3.6"
