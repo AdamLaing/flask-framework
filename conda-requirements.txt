@@ -5,7 +5,3 @@ flask
 jinja2
 pip
 simplejson
-statsmodels
-wtforms
-functools
-numpy
