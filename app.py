@@ -5,7 +5,7 @@ from bokeh.models import ColumnDataSource, FactorRange
 from bokeh.plotting import figure
 from bokeh.resources import CDN
 from bokeh.embed import components
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegressionCV
 import functools
 import numpy as np
 import pandas as pd
@@ -129,7 +129,7 @@ def main_cat_logreg(dat, cat):
 
     y = state
 
-    logreg = LogisticRegression()
+    logreg = LogisticRegressionCV(cv=5)
 
     logreg.fit(X, y)
 
@@ -156,7 +156,7 @@ def kickstarter():
         camp_dur = int(request.form['camp_dur'])
         goal = int(request.form['goal'])
         pledges = list(map(int, request.form['pledges'].split()))
-        dsecription = request.form['description']
+        description = request.form['description']
 
         paragraphs = len(description.split('/n'))
         word_count = len(description.split())
@@ -189,34 +189,37 @@ def kickstarter():
                     'or enter "None".'
         if error is None:
             data = kdat
-            if main != "None":
-                data = data.loc[data.main == main]
-            if sub != "None":
-                data = data.loc[data.sub == sub]
-            if camp_dur != "None":
-                data = data.loc[data.duration == camp_dur]
-            if launch_month != "None":
-                data = data.loc[data.launch_month == launch_month]
-            if goal != "None":
-                data = data.loc[(data['goal'] <= 1.1 * goal) &
-                                (data['goal'] >= .9 * goal)]
+            # if main != "None":
+            #     data = data.loc[data.main == main]
+            # if sub != "None":
+            #     data = data.loc[data.sub == sub]
+            # if camp_dur != "None":
+            #     data = data.loc[data.duration == camp_dur]
+            # if launch_month != "None":
+            #     data = data.loc[data.launch_month == launch_month]
+            # if goal != "None":
+            #     data = data.loc[(data['goal'] <= 1.1 * goal) &
+            #                     (data['goal'] >= .9 * goal)]
 
             # Delete rows with duplicate IDs
             data = data.drop_duplicates(subset="id")
 
-            p = figure(plot_width=400, plot_height=400)
+            p = figure(plot_width=800, plot_height=400)
 
             # add a line renderer
-            p.line(data['date'], data['close'], line_width=2)
+            # p.line(data['date'], data['close'], line_width=2)
 
             script, div = components(p)
 
             model = main_cat_logreg(data, main)
 
-            prob = model.predict([[goal, camp_dur, paragraphs, word_count,
-                            pledge_mean, pledge_std, num_pledge]])[0]
+            prob = model.predict_proba([[goal, camp_dur, paragraphs,
+                                         word_count,
+                            pledge_mean, pledge_std, num_pledge]])[0][1]
 
-            flash('Probability of Campaign Success: ' + str(prob))
+            prob = round(prob * 100, 2)
+
+            flash('Probability of Campaign Success: ' + str(prob) + '%')
             return render_template('kickstarter.html', div=div, script=script,
                                    form=form)
 
