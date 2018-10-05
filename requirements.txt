@@ -26,6 +26,7 @@ Quandl==3.4.2
 requests==2.19.1
 scipy==1.1.0
 six==1.11.0
+sklearn==0.20.0
 statsmodels==0.9.0
 tornado==5.1
 urllib3==1.23
