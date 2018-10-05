@@ -93,8 +93,6 @@ app.config['SECRET_KEY'] = '7d441f27d441f27567d441f2b6176a'
     # return template.render(**template_vars)
 
 
-kdat = pd.read_json(path_or_buf='kdat.json',
-                    compression='zip')
 
 
 class KickstarterForm(Form):
@@ -121,6 +119,9 @@ def index():
 def kickstarter():
     form = KickstarterForm(request.form)
     if request.method == 'POST':
+
+        kdat = pd.read_json(path_or_buf='kdat.json',
+                            compression='zip')
         main = request.form['main']
         sub = request.form['sub']
         camp_dur = request.form['camp_dur']
