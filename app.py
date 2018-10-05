@@ -92,6 +92,11 @@ app.config['SECRET_KEY'] = '7d441f27d441f27567d441f2b6176a'
     # template = env.get_template(template_name)
     # return template.render(**template_vars)
 
+
+kdat = pd.read_json(path_or_buf='kdat.json',
+                    compression='zip')
+
+
 class KickstarterForm(Form):
     main = TextField('Main Category:', validators=[validators.required()])
     sub = TextField('Sub-category:', validators=[validators.required()])
@@ -126,53 +131,53 @@ def kickstarter():
         # This will all need to be updated
         error = None
 
-        # if launch_month not in np.arange(1, 13) and launch_month != "None":
-        #     error = 'Please enter launch month as a number from 1 to 12, ' \
-        #             'or enter "None".'
-        # 
-        # elif main not in kdat.main and main != "None":
-        #     error = 'Invalid Main Category. Please check your spelling, ' \
-        #             'or enter "None".'
-        # 
-        # elif sub not in kdat.sub and sub != "None":
-        #     error = 'Invalid Sub-category. Please check your spelling, ' \
-        #             'or enter "None".'
-        # 
-        # elif not isinstance(camp_dur, int) and camp_dur != "None":
-        #     error = 'Invalid Campaign Duration. Please enter an integer, ' \
-        #             'or enter "None".'
-        # 
-        # elif not isinstance(goal, int) and goal != "None":
-        #     error = 'Invalid Goal Amount. Please enter an integer, ' \
-        #             'or enter "None".'
-        # if error is None:
-        #     data = kdat
-        #     if main != "None":
-        #         data = data.loc[data.main == main]
-        #     if sub != "None":
-        #         data = data.loc[data.sub == sub]
-        #     if camp_dur != "None":
-        #         data = data.loc[data.duration == camp_dur]
-        #     if launch_month != "None":
-        #         data = data.loc[data.launch_month == launch_month]
-        #     if goal != "None":
-        #         data = data.loc[
-        #             data.goal <= 1.1 * goal and data.goal >= .9 * goal]
-        # 
-        #     # Delete rows with duplicate IDs
-        #     data = data.drop_duplicates(subset="id")
-        # 
-        #     p = figure(plot_width=400, plot_height=400)
-        # 
-        #     # add a line renderer
-        #     # p.line(data['date'], data['close'], line_width=2)
-        # 
-        #     script, div = components(p)
-        #     flash('[Placeholder Text')
-        #     return render_template('kickstarter.html', div=div, script=script,
-        #                            form=form)
-        # 
-        # flash(error)
+        if launch_month not in np.arange(1, 13) and launch_month != "None":
+            error = 'Please enter launch month as a number from 1 to 12, ' \
+                    'or enter "None".'
+
+        elif main not in kdat.main and main != "None":
+            error = 'Invalid Main Category. Please check your spelling, ' \
+                    'or enter "None".'
+
+        elif sub not in kdat.sub and sub != "None":
+            error = 'Invalid Sub-category. Please check your spelling, ' \
+                    'or enter "None".'
+
+        elif not isinstance(camp_dur, int) and camp_dur != "None":
+            error = 'Invalid Campaign Duration. Please enter an integer, ' \
+                    'or enter "None".'
+
+        elif not isinstance(goal, int) and goal != "None":
+            error = 'Invalid Goal Amount. Please enter an integer, ' \
+                    'or enter "None".'
+        if error is None:
+            data = kdat
+            if main != "None":
+                data = data.loc[data.main == main]
+            if sub != "None":
+                data = data.loc[data.sub == sub]
+            if camp_dur != "None":
+                data = data.loc[data.duration == camp_dur]
+            if launch_month != "None":
+                data = data.loc[data.launch_month == launch_month]
+            if goal != "None":
+                data = data.loc[
+                    data.goal <= 1.1 * goal and data.goal >= .9 * goal]
+
+            # Delete rows with duplicate IDs
+            data = data.drop_duplicates(subset="id")
+
+            p = figure(plot_width=400, plot_height=400)
+
+            # add a line renderer
+            # p.line(data['date'], data['close'], line_width=2)
+
+            script, div = components(p)
+            flash('[Placeholder Text')
+            return render_template('kickstarter.html', div=div, script=script,
+                                   form=form)
+
+        flash(error)
     else:
         form = KickstarterForm(request.form)
     return render_template('kickstarter.html', form=form)
