@@ -5,7 +5,7 @@ from bokeh.models import ColumnDataSource, FactorRange
 from bokeh.plotting import figure
 from bokeh.resources import CDN
 from bokeh.embed import components
-from sklearn.linear_model import LogisticRegressionCV
+from sklearn.linear_model import LogisticRegression#CV
 import functools
 import numpy as np
 import pandas as pd
@@ -112,14 +112,16 @@ class KickstarterForm(Form):
 							'Please separate paragraphs by an empty line. :', validators=[validators.required()])
 
 
-
-def main_cat_logreg(dat, cat):
+def trim_data(dat, cat):
     X = dat[(dat['state'] == 'successful') | (dat['state'] == 'failed')]
 
     X = X[(X['currency'] == 'USD') | (X['currency'] == 'US')]
 
     X = X[X['main'] == cat]
+    return X
 
+
+def main_cat_logreg(X):
     state = X['state']
 
     feature_cols = ['goal', 'duration', 'paragraphs', 'word_count',
@@ -129,7 +131,7 @@ def main_cat_logreg(dat, cat):
 
     y = state
 
-    logreg = LogisticRegressionCV(cv=5)
+    logreg = LogisticRegression()#CV(cv=5, solver='sag')
 
     logreg.fit(X, y)
 
@@ -188,7 +190,7 @@ def kickstarter():
             error = 'Invalid Goal Amount. Please enter an integer, ' \
                     'or enter "None".'
         if error is None:
-            data = kdat
+            data = trim_data(kdat, main)
             # if main != "None":
             #     data = data.loc[data.main == main]
             # if sub != "None":
@@ -206,12 +208,27 @@ def kickstarter():
 
             p = figure(plot_width=800, plot_height=400)
 
+
+            graph_data = data.groupby(['state', 'launch_year',
+                                       'launch_month']).size()
+            graph_keys = data.groupby(['launch_year',
+                                 'launch_month']).groups.keys()
             # add a line renderer
-            # p.line(data['date'], data['close'], line_width=2)
+            p.line(np.arange(len(graph_data['successful'])),#list(graph_keys),
+                   graph_data['successful'], line_width=2, legend='Successful')
+            p.line(np.arange(len(graph_data['failed'])),  # list(graph_keys),
+                   graph_data['failed'], line_width=2, color='red',
+                   legend='Failed')
+            p.xaxis.axis_label = 'Months from 2009 to 2018'
+            p.xaxis.ticker = [9, 33, 57, 81, 105]
+            p.xaxis.major_label_overrides = {9: '2010', 33: '2012',
+                                             57: '2014', 81: '2016',
+                                             105: '2018'}
+            p.yaxis.axis_label = "Number of Campaigns"
 
             script, div = components(p)
 
-            model = main_cat_logreg(data, main)
+            model = main_cat_logreg(data)
 
             prob = model.predict_proba([[goal, camp_dur, paragraphs,
                                          word_count,
