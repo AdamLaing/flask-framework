@@ -3,10 +3,14 @@ from wtforms import Form, TextField, TextAreaField, validators, StringField, Sub
 from bokeh.io import show, output_file
 from bokeh.models import ColumnDataSource, FactorRange
 from bokeh.plotting import figure
+from bokeh.resources import CDN
+from bokeh.embed import components
+from sklearn.linear_model import LogisticRegression
 import functools
 import numpy as np
 import pandas as pd
 import datetime
+import statistics
 import statsmodels.formula.api as sm
 
 DEBUG = True 
@@ -108,6 +112,29 @@ class KickstarterForm(Form):
 							'Please separate paragraphs by an empty line. :', validators=[validators.required()])
 
 
+
+def main_cat_logreg(dat, cat):
+    X = dat[(dat['state'] == 'successful') | (dat['state'] == 'failed')]
+
+    X = X[(X['currency'] == 'USD') | (X['currency'] == 'US')]
+
+    X = X[X['main'] == cat]
+
+    state = X['state']
+
+    feature_cols = ['goal', 'duration', 'paragraphs', 'word_count',
+                    'pledge_mean', 'pledge_std', 'num_pledges']
+
+    X = X.loc[:, feature_cols]
+
+    y = state
+
+    logreg = LogisticRegression()
+
+    logreg.fit(X, y)
+
+    return logreg
+
 @app.route('/')
 def index():
     # Index will give options of exploring Kickstarter, Indiegogo, possibly
@@ -122,33 +149,42 @@ def kickstarter():
 
         kdat = pd.read_json(path_or_buf='kdat.json',
                             compression='zip')
+        # make these into drop-down selections
         main = request.form['main']
         sub = request.form['sub']
-        camp_dur = request.form['camp_dur']
-        launch_month = request.form['launch_month']
-        goal = request.form['goal']
-        pledges = request.form['pledges']
+        launch_month = int(request.form['launch_month'])
+        camp_dur = int(request.form['camp_dur'])
+        goal = int(request.form['goal'])
+        pledges = list(map(int, request.form['pledges'].split()))
         dsecription = request.form['description']
+
+        paragraphs = len(description.split('/n'))
+        word_count = len(description.split())
+        num_pledge = len(pledges)
+        pledge_mean = statistics.mean(pledges)
+        pledge_std = statistics.stdev(pledges)
+
         # This will all need to be updated
         error = None
 
-        if launch_month not in np.arange(1, 13) and launch_month != "None":
+        if launch_month not in np.arange(1, 13) and \
+                launch_month != 0:
             error = 'Please enter launch month as a number from 1 to 12, ' \
                     'or enter "None".'
 
-        elif main not in kdat.main and main != "None":
+        if not kdat['main'].str.contains(main).any() and main != "None":
             error = 'Invalid Main Category. Please check your spelling, ' \
                     'or enter "None".'
 
-        elif sub not in kdat.sub and sub != "None":
+        elif not kdat['sub'].str.contains(sub).any() and sub != "None":
             error = 'Invalid Sub-category. Please check your spelling, ' \
                     'or enter "None".'
 
-        elif not isinstance(camp_dur, int) and camp_dur != "None":
+        elif not isinstance(camp_dur, int) and camp_dur != 0:
             error = 'Invalid Campaign Duration. Please enter an integer, ' \
                     'or enter "None".'
 
-        elif not isinstance(goal, int) and goal != "None":
+        elif not isinstance(goal, int) and goal != 0:
             error = 'Invalid Goal Amount. Please enter an integer, ' \
                     'or enter "None".'
         if error is None:
@@ -162,8 +198,8 @@ def kickstarter():
             if launch_month != "None":
                 data = data.loc[data.launch_month == launch_month]
             if goal != "None":
-                data = data.loc[
-                    data.goal <= 1.1 * goal and data.goal >= .9 * goal]
+                data = data.loc[(data['goal'] <= 1.1 * goal) &
+                                (data['goal'] >= .9 * goal)]
 
             # Delete rows with duplicate IDs
             data = data.drop_duplicates(subset="id")
@@ -171,10 +207,16 @@ def kickstarter():
             p = figure(plot_width=400, plot_height=400)
 
             # add a line renderer
-            # p.line(data['date'], data['close'], line_width=2)
+            p.line(data['date'], data['close'], line_width=2)
 
             script, div = components(p)
-            flash('[Placeholder Text')
+
+            model = main_cat_logreg(data, main)
+
+            prob = model.predict([[goal, camp_dur, paragraphs, word_count,
+                            pledge_mean, pledge_std, num_pledge]])[0]
+
+            flash('Probability of Campaign Success: ' + str(prob))
             return render_template('kickstarter.html', div=div, script=script,
                                    form=form)
 
